@@ -85,6 +85,7 @@ export default function ChatContainer({ workspace, knownHistory = [] }) {
     setChatHistory(prevChatHistory);
     setMessageEmit("");
     setLoadingResponse(true);
+    setUserMessageCount(userMessageCount + 1);
   };
 
   function endSTTSession() {
