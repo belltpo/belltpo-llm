@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Error - PreChat Form{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center">
+    <!-- Error Icon -->
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-6">
+        <i class="fas fa-exclamation-triangle text-3xl text-red-600"></i>
+    </div>
+
+    <!-- Error Message -->
+    <h1 class="text-3xl font-bold text-white mb-4">Oops! Something went wrong</h1>
+    <p class="text-indigo-100 mb-8">We encountered an issue while processing your request.</p>
+
+    <!-- Error Details -->
+    <div class="glass-effect rounded-2xl p-8 shadow-xl mb-8">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-red-800 text-sm">
+                <i class="fas fa-info-circle mr-2"></i>
+                {{ error_message|default:"An unexpected error occurred. Please try again." }}
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-3">
+            <a 
+                href="/" 
+                class="btn-primary inline-flex items-center px-6 py-3 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full justify-center"
+            >
+                <i class="fas fa-redo mr-2"></i>
+                Try Again
+            </a>
+            
+            <button 
+                onclick="history.back()" 
+                class="w-full px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg border border-gray-200 hover:bg-gray-200 transition-all duration-300"
+            >
+                <i class="fas fa-arrow-left mr-2"></i>
+                Go Back
+            </button>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="glass-effect rounded-2xl p-6 shadow-xl">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Need Help?</h3>
+        <p class="text-gray-600 text-sm mb-4">
+            If this problem persists, please contact our support team with the following information:
+        </p>
+        <div class="bg-gray-50 rounded-lg p-3 text-left">
+            <p class="text-xs text-gray-500 font-mono">
+                Error Time: {{ request.timestamp|default:"Unknown" }}<br>
+                Session ID: {{ request.session.session_key|default:"N/A" }}<br>
+                User Agent: {{ request.META.HTTP_USER_AGENT|truncatechars:50|default:"Unknown" }}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
