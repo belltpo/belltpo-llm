@@ -73,14 +73,14 @@
     "posthog-node": "^3.1.1",
     "prisma": "5.3.1",
     "slugify": "^1.6.6",
-    "swagger-autogen": "^2.23.5",
-    "swagger-ui-express": "^5.0.0",
-    "truncate": "^3.0.0",
-    "url-pattern": "^1.0.3",
+    "sqlite3": "^5.1.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^4.6.3",
     "uuid": "^9.0.0",
-    "uuid-apikey": "^1.5.3",
+    "vectordb": "^0.4.21",
     "weaviate-ts-client": "^1.4.0",
-    "winston": "^3.13.0"
+    "winston": "^3.8.2",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@inquirer/prompts": "^4.3.1",

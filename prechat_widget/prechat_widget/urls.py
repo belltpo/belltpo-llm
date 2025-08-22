@@ -8,7 +8,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('prechat.urls')),
+    path('api/', include('prechat.api_urls')),  # API endpoints
+    path('', include('prechat.urls')),  # Regular views
 ]
 
 # Serve static files during development

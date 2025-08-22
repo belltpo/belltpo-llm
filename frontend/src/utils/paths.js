@@ -111,6 +111,9 @@ export default {
     chats: () => {
       return "/settings/workspace-chats";
     },
+    userDashboard: () => {
+      return "/settings/user-dashboard";
+    },
     llmPreference: () => {
       return "/settings/llm-preference";
     },

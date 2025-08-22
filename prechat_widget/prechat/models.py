@@ -14,3 +14,25 @@ class PrechatSubmission(models.Model):
     
     class Meta:
         db_table = 'prechat_submissions'
+
+
+class ChatConversation(models.Model):
+    ROLE_CHOICES = (
+        ("user", "User"),
+        ("ai", "AI")
+    )
+    
+    submission = models.ForeignKey(
+        PrechatSubmission, 
+        on_delete=models.CASCADE, 
+        related_name="conversations"
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.submission.name} - {self.role}: {self.message[:50]}..."
+    
+    class Meta:
+        ordering = ['timestamp']

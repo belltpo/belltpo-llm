@@ -16,7 +16,7 @@ async function streamChatWithForEmbed(
   message,
   /** @type {String} */
   sessionId,
-  { promptOverride, modelOverride, temperatureOverride, username }
+  { promptOverride, modelOverride, temperatureOverride, username, userFormData }
 ) {
   const chatMode = embed.chat_mode;
   const chatModel = embed.allow_model_override ? modelOverride : null;
@@ -191,16 +191,35 @@ async function streamChatWithForEmbed(
     metrics = stream.metrics;
   }
 
+  // Build comprehensive connection information including user form data
+  const connectionInfo = response.locals.connection || {};
+  
+  // Add username if provided
+  if (username) {
+    connectionInfo.username = String(username);
+  }
+  
+  // Add user form data if provided (from prechat form)
+  if (userFormData && typeof userFormData === 'object') {
+    // Map form fields to connection info
+    if (userFormData.name) connectionInfo.name = userFormData.name;
+    if (userFormData.email) connectionInfo.email = userFormData.email;
+    if (userFormData.mobile || userFormData.phone) {
+      connectionInfo.mobile = userFormData.mobile || userFormData.phone;
+    }
+    if (userFormData.region || userFormData.location) {
+      connectionInfo.region = userFormData.region || userFormData.location;
+    }
+    
+    // Store original form data for reference
+    connectionInfo.formData = userFormData;
+  }
+
   await EmbedChats.new({
     embedId: embed.id,
     prompt: message,
     response: { text: completeText, type: chatMode, sources, metrics },
-    connection_information: response.locals.connection
-      ? {
-          ...response.locals.connection,
-          username: !!username ? String(username) : null,
-        }
-      : { username: !!username ? String(username) : null },
+    connection_information: connectionInfo,
     sessionId,
   });
   return;

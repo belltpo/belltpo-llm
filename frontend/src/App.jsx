@@ -100,6 +100,9 @@ const MobileConnections = lazy(
 const GeneralChats = lazy(
   () => import("@/pages/GeneralSettings/Chats")
 );
+const UserDashboard = lazy(
+  () => import("@/pages/GeneralSettings/UserDashboard")
+);
 
 export default function App() {
   return (
@@ -244,6 +247,10 @@ export default function App() {
                   <Route
                     path="/settings/workspace-chats"
                     element={<ManagerRoute Component={GeneralChats} />}
+                  />
+                  <Route
+                    path="/settings/user-dashboard"
+                    element={<ManagerRoute Component={UserDashboard} />}
                   />
                   <Route
                     path="/settings/invites"
