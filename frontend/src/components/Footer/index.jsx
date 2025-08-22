@@ -10,6 +10,7 @@ import {
   HouseLine,
   Info,
   LinkSimple,
+  ChartBar,
 } from "@phosphor-icons/react";
 import React, { useEffect, useState } from "react";
 import SettingsButton from "../SettingsButton";
@@ -94,6 +95,21 @@ export default function Footer() {
               data-tooltip-content="Join the AnythingLLM Discord"
             >
               <DiscordLogo
+                weight="fill"
+                className="h-5 w-5"
+                color="var(--theme-sidebar-footer-icon-fill)"
+              />
+            </Link>
+          </div>
+          <div className="flex w-fit">
+            <Link
+              to="/dashboard/chat-sessions"
+              className="transition-all duration-300 p-2 rounded-full bg-theme-sidebar-footer-icon hover:bg-theme-sidebar-footer-icon-hover"
+              aria-label="Chat Dashboard"
+              data-tooltip-id="footer-item"
+              data-tooltip-content="View chat dashboard"
+            >
+              <ChartBar
                 weight="fill"
                 className="h-5 w-5"
                 color="var(--theme-sidebar-footer-icon-fill)"
