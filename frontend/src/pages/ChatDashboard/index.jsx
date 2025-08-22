@@ -52,12 +52,33 @@ export default function ChatDashboard() {
 
   const fetchSessionDetails = async (sessionId) => {
     try {
-      const response = await System.chatDashboard.getSessionDetails(sessionId, selectedEmbed);
-      setSelectedSession(response.sessionInfo);
-      setChatHistory(response.chatHistory || []);
+      const response = await fetch(`/api/chat-dashboard/sessions/${sessionId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Transform the chat history to match expected format
+        const transformedHistory = (data.chatHistory || []).map(chat => ({
+          id: chat.id,
+          userMessage: chat.prompt,
+          assistantMessage: chat.response,
+          timestamp: chat.createdAt
+        }));
+        setChatHistory(transformedHistory);
+        setSelectedSession(data.session || null);
+      } else {
+        console.error("Failed to fetch session details");
+        setChatHistory([]);
+        setSelectedSession(null);
+      }
     } catch (error) {
-      console.error("Failed to fetch session details:", error);
-      showToast("Failed to load session details", "error");
+      console.error("Error fetching session details:", error);
+      setChatHistory([]);
+      setSelectedSession(null);
     }
   };
 
@@ -260,33 +281,46 @@ export default function ChatDashboard() {
                 {/* Chat History */}
                 <div className="flex-1 overflow-y-auto p-4 bg-theme-bg-primary">
                   <div className="space-y-4">
-                    {chatHistory.map((message, index) => (
-                      <div key={message.id || index} className="space-y-2">
-                        {/* User Message */}
-                        <div className="flex justify-end">
-                          <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-theme-sidebar-footer-icon text-white">
-                            <div className="text-sm">{message.userMessage}</div>
-                          </div>
+                    {chatHistory.length === 0 ? (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                          <ChatCircle size={48} className="mx-auto mb-2 text-theme-text-secondary opacity-50" />
+                          <p className="text-theme-text-secondary">No chat history available</p>
                         </div>
-                        <div className="text-xs text-theme-text-secondary text-right">
-                          {moment(message.timestamp).fromNow()}
-                        </div>
-
-                        {/* Assistant Message */}
-                        {message.assistantMessage && (
-                          <>
-                            <div className="flex justify-start">
-                              <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-theme-bg-secondary text-theme-text-primary border border-theme-modal-border">
-                                <div className="text-sm">{message.assistantMessage}</div>
-                              </div>
-                            </div>
-                            <div className="text-xs text-theme-text-secondary text-left">
-                              Assistant • {moment(message.timestamp).fromNow()}
-                            </div>
-                          </>
-                        )}
                       </div>
-                    ))}
+                    ) : (
+                      chatHistory.map((message, index) => (
+                        <div key={message.id || index} className="space-y-2">
+                          {/* User Message */}
+                          {message.userMessage && (
+                            <>
+                              <div className="flex justify-end">
+                                <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-theme-sidebar-footer-icon text-white">
+                                  <div className="text-sm">{message.userMessage}</div>
+                                </div>
+                              </div>
+                              <div className="text-xs text-theme-text-secondary text-right">
+                                User • {moment(message.timestamp).fromNow()}
+                              </div>
+                            </>
+                          )}
+
+                          {/* Assistant Message */}
+                          {message.assistantMessage && (
+                            <>
+                              <div className="flex justify-start">
+                                <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-theme-bg-secondary text-theme-text-primary border border-theme-modal-border">
+                                  <div className="text-sm whitespace-pre-wrap">{message.assistantMessage}</div>
+                                </div>
+                              </div>
+                              <div className="text-xs text-theme-text-secondary text-left">
+                                Assistant • {moment(message.timestamp).fromNow()}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </>

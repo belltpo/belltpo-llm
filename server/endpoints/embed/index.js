@@ -30,6 +30,9 @@ function embeddedEndpoints(app) {
           model = null,
           temperature = null,
           username = null,
+          // User form data from prechat form
+          userFormData = null,
+          userDetails = null,
         } = reqBody(request);
 
         response.setHeader("Cache-Control", "no-cache");
@@ -43,6 +46,7 @@ function embeddedEndpoints(app) {
           modelOverride: model,
           temperatureOverride: temperature,
           username,
+          userFormData: userFormData || userDetails,
         });
         await Telemetry.sendTelemetry("embed_sent_chat", {
           multiUserMode: multiUserMode(response),

@@ -549,7 +549,30 @@ const System = {
       .then((res) => res.json())
       .catch((e) => {
         console.error(e);
-        return [];
+        return { chats: [], hasPages: false, totalChats: 0 };
+      });
+  },
+  prechatUsers: async () => {
+    return await fetch(`${API_BASE}/system/prechat-users`, {
+      method: "GET",
+      headers: baseHeaders(),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return { users: [] };
+      });
+  },
+  chatsByUser: async (sessionToken, offset = 0) => {
+    return await fetch(`${API_BASE}/system/workspace-chats/by-user`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify({ sessionToken, offset }),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return { chats: [] };
       });
   },
   eventLogs: async (offset = 0) => {
