@@ -1061,75 +1061,35 @@ function systemEndpoints(app) {
     ],
     async (request, response) => {
       try {
-        const fs = require('fs');
+        const sqlite3 = require('sqlite3').verbose();
         const path = require('path');
         
         // Path to the Django SQLite database
         const dbPath = path.join(__dirname, '../../prechat_widget/db.sqlite3');
         
-        console.log('Looking for SQLite database at:', dbPath);
-        
-        // Check if database file exists
-        if (!fs.existsSync(dbPath)) {
-          console.log('SQLite database not found at:', dbPath);
-          // Return sample data for testing
-          const sampleUsers = [
-            {
-              id: 1,
-              name: "John Doe",
-              email: "john@example.com",
-              mobile: "+1234567890",
-              region: "US",
-              session_token: "session_001",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              id: 2,
-              name: "Jane Smith", 
-              email: "jane@example.com",
-              mobile: "+0987654321",
-              region: "UK",
-              session_token: "session_002",
-              created_at: new Date(Date.now() - 86400000).toISOString(),
-              updated_at: new Date(Date.now() - 86400000).toISOString()
-            }
-          ];
-          return response.status(200).json({ users: sampleUsers });
-        }
+        const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+          if (err) {
+            console.error('Error opening database:', err);
+            return response.status(500).json({ error: 'Database connection failed' });
+          }
+        });
 
-        // Try to use sqlite3 if available
-        try {
-          const sqlite3 = require('sqlite3').verbose();
-          
-          const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
-            if (err) {
-              console.error('Error opening database:', err);
-              return response.status(500).json({ error: 'Database connection failed' });
-            }
-          });
+        const query = `
+          SELECT id, name, email, mobile, region, session_token, created_at, updated_at
+          FROM prechat_submissions
+          ORDER BY created_at DESC
+        `;
 
-          const query = `
-            SELECT id, name, email, mobile, region, session_token, created_at, updated_at
-            FROM prechat_submissions
-            ORDER BY created_at DESC
-          `;
-
-          db.all(query, [], (err, rows) => {
-            if (err) {
-              console.error('Database query error:', err);
-              db.close();
-              return response.status(500).json({ error: 'Database query failed' });
-            }
-
+        db.all(query, [], (err, rows) => {
+          if (err) {
+            console.error('Database query error:', err);
             db.close();
-            console.log('Found prechat users:', rows.length);
-            response.status(200).json({ users: rows || [] });
-          });
-        } catch (sqliteError) {
-          console.error('sqlite3 module error:', sqliteError);
-          response.status(500).json({ error: 'sqlite3 module not available' });
-        }
+            return response.status(500).json({ error: 'Database query failed' });
+          }
+
+          db.close();
+          response.status(200).json({ users: rows });
+        });
       } catch (e) {
         console.error('Prechat users fetch error:', e);
         response.status(500).json({ error: 'Failed to fetch prechat users' });
@@ -1150,51 +1110,30 @@ function systemEndpoints(app) {
         const { sessionToken, offset = 0, limit = 50 } = reqBody(request);
         
         if (!sessionToken) {
-          return response.status(400).json({ error: "Session token is required" });
+          return response.status(400).json({ error: 'Session token is required' });
         }
 
-        console.log('Fetching chats for session token:', sessionToken);
-
-        // Fetch embed chats using Prisma client
-        const embedChats = await prisma.embed_chats.findMany({
-          where: {
-            session_id: sessionToken,
-          },
-          include: {
-            embed_config: {
-              select: {
-                id: true,
-                workspace_id: true
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'asc'
-          },
-          take: limit,
-          skip: offset,
-        });
-
-        console.log(`Found ${embedChats.length} chats for session ${sessionToken}`);
-
-        const formattedChats = embedChats.map(chat => ({
+        // Import EmbedChats model to access embed chat sessions
+        const { EmbedChats } = require("../models/embedChats");
+        
+        // Find embed chats associated with this session token
+        const embedChats = await EmbedChats.forEmbedByUser(null, sessionToken, limit, { id: "asc" });
+        
+        // Transform embed chats to match workspace chat format
+        const chats = embedChats.map(chat => ({
           id: chat.id,
           prompt: chat.prompt,
           response: chat.response,
           createdAt: chat.createdAt,
-          session_id: chat.session_id,
-          embed_id: chat.embed_id,
-          workspace_id: chat.embed_config?.workspace_id || null
+          user: { username: 'Embed User' },
+          workspace: { name: 'Embed Chat' },
+          sessionId: chat.session_id
         }));
 
-        response.status(200).json({ 
-          chats: formattedChats,
-          hasMore: embedChats.length === limit,
-          total: embedChats.length
-        });
+        response.status(200).json({ chats: chats });
       } catch (e) {
         console.error('User chats fetch error:', e);
-        response.status(500).json({ error: 'Failed to fetch user chats', details: e.message });
+        response.status(500).json({ error: 'Failed to fetch user chats' });
       }
     }
   );

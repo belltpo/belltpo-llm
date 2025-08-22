@@ -18,11 +18,12 @@ function chatDashboardEndpoints(app) {
   // Get all chat sessions for dashboard
   app.get("/chat-dashboard/sessions", async (request, response) => {
     try {
-      const user = await userFromSession(request, response);
-      if (!user) {
-        response.sendStatus(401).end();
-        return;
-      }
+      // Remove authentication requirement for chat dashboard
+      // const user = await userFromSession(request, response);
+      // if (!user) {
+      //   response.sendStatus(401).end();
+      //   return;
+      // }
 
       const { embedId, limit = 50, offset = 0 } = request.query;
       
@@ -121,11 +122,12 @@ function chatDashboardEndpoints(app) {
   // Get specific session details and chat history
   app.get("/chat-dashboard/sessions/:sessionId", async (request, response) => {
     try {
-      const user = await userFromSession(request, response);
-      if (!user) {
-        response.sendStatus(401).end();
-        return;
-      }
+      // Remove authentication requirement for chat dashboard
+      // const user = await userFromSession(request, response);
+      // if (!user) {
+      //   response.sendStatus(401).end();
+      //   return;
+      // }
 
       const { sessionId } = request.params;
       const { embedId } = request.query;
@@ -209,11 +211,12 @@ function chatDashboardEndpoints(app) {
   // Get dashboard statistics
   app.get("/chat-dashboard/stats", async (request, response) => {
     try {
-      const user = await userFromSession(request, response);
-      if (!user) {
-        response.sendStatus(401).end();
-        return;
-      }
+      // Remove authentication requirement for chat dashboard
+      // const user = await userFromSession(request, response);
+      // if (!user) {
+      //   response.sendStatus(401).end();
+      //   return;
+      // }
 
       const { embedId } = request.query;
       const now = new Date();
@@ -264,11 +267,12 @@ function chatDashboardEndpoints(app) {
   // Get available embed configurations for filtering
   app.get("/chat-dashboard/embeds", async (request, response) => {
     try {
-      const user = await userFromSession(request, response);
-      if (!user) {
-        response.sendStatus(401).end();
-        return;
-      }
+      // Remove authentication requirement for chat dashboard
+      // const user = await userFromSession(request, response);
+      // if (!user) {
+      //   response.sendStatus(401).end();
+      //   return;
+      // }
 
       const embeds = await EmbedConfig.whereWithWorkspace({}, null, {
         id: "desc",
