@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +34,15 @@
         .form-header {
             text-align: center;
             margin-bottom: 32px;
+        }
+        
+        .form-header .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         .form-header h2 {
@@ -110,7 +120,8 @@
 <body>
     <div class="form-container">
         <div class="form-header">
-            <h2>Welcome to BellTPO</h2>
+            <img src="{% static 'images/belltpo_logo.jpg' %}" alt="BellTPO Logo" class="logo">
+            <h2>BellTPO Chat Assistant</h2>
             <p>Please fill out this form to start chatting</p>
         </div>
         
@@ -136,7 +147,7 @@
                     <option value="">Select your region</option>
                     <option value="North America">North America</option>
                     <option value="Europe">Europe</option>
-                    <option value="Asia Pacific">Asia Pacific</option>
+                    <option value="Asia Pacific">India</option>
                     <option value="Middle East">Middle East</option>
                     <option value="Africa">Africa</option>
                     <option value="South America">South America</option>
