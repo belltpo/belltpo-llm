@@ -797,6 +797,65 @@ const System = {
     agentPlugins: AgentPlugins,
   },
   promptVariables: SystemPromptVariable,
+
+  chatDashboard: {
+    getSessions: async (embedId = null) => {
+      const params = new URLSearchParams();
+      if (embedId) params.append("embedId", embedId);
+      
+      return await fetch(`${API_BASE}/chat-dashboard/sessions?${params}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { sessions: [], total: 0 };
+        });
+    },
+
+    getSessionDetails: async (sessionId, embedId = null) => {
+      const params = new URLSearchParams();
+      if (embedId) params.append("embedId", embedId);
+      
+      return await fetch(`${API_BASE}/chat-dashboard/sessions/${sessionId}?${params}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { sessionInfo: null, chatHistory: [] };
+        });
+    },
+
+    getStats: async (embedId = null) => {
+      const params = new URLSearchParams();
+      if (embedId) params.append("embedId", embedId);
+      
+      return await fetch(`${API_BASE}/chat-dashboard/stats?${params}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return {};
+        });
+    },
+
+    getEmbeds: async () => {
+      return await fetch(`${API_BASE}/chat-dashboard/embeds`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { embeds: [] };
+        });
+    },
+  },
 };
 
 export default System;

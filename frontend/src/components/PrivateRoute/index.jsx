@@ -84,7 +84,7 @@ function useIsAuthenticated() {
 
 // Allows only admin to access the route and if in single user mode,
 // allows all users to access the route
-export function AdminRoute({ Component, hideUserMenu = false }) {
+export function AdminRoute({ Component, children, hideUserMenu = false }) {
   const { isAuthd, shouldRedirectToOnboarding, multiUserMode } =
     useIsAuthenticated();
   if (isAuthd === null) return <FullScreenLoader />;
@@ -94,15 +94,17 @@ export function AdminRoute({ Component, hideUserMenu = false }) {
   }
 
   const user = userFromStorage();
+  const content = Component ? <Component /> : children;
+  
   return isAuthd && (user?.role === "admin" || !multiUserMode) ? (
     hideUserMenu ? (
       <KeyboardShortcutWrapper>
-        <Component />
+        {content}
       </KeyboardShortcutWrapper>
     ) : (
       <KeyboardShortcutWrapper>
         <UserMenu>
-          <Component />
+          {content}
         </UserMenu>
       </KeyboardShortcutWrapper>
     )

@@ -18,6 +18,7 @@ import { LogoProvider } from "./LogoContext";
 import { FullScreenLoader } from "./components/Preloader";
 import { ThemeProvider } from "./ThemeContext";
 import KeyboardShortcutsHelp from "@/components/KeyboardShortcutsHelp";
+import paths from "@/utils/paths";
 
 const Main = lazy(() => import("@/pages/Main"));
 const InvitePage = lazy(() => import("@/pages/Invite"));
@@ -27,7 +28,11 @@ const AdminInvites = lazy(() => import("@/pages/Admin/Invitations"));
 const AdminWorkspaces = lazy(() => import("@/pages/Admin/Workspaces"));
 const AdminLogs = lazy(() => import("@/pages/Admin/Logging"));
 const AdminAgents = lazy(() => import("@/pages/Admin/Agents"));
-const GeneralChats = lazy(() => import("@/pages/GeneralSettings/Chats"));
+const GeneralSettings = lazy(() => import("@/pages/GeneralSettings"));
+const TranscriptionSettings = lazy(() =>
+  import("@/pages/GeneralSettings/TranscriptionSettings")
+);
+const ChatDashboard = lazy(() => import("@/pages/ChatDashboard"));
 const InterfaceSettings = lazy(
   () => import("@/pages/GeneralSettings/Settings/Interface")
 );
@@ -92,6 +97,9 @@ const SystemPromptVariables = lazy(
 const MobileConnections = lazy(
   () => import("@/pages/GeneralSettings/MobileConnections")
 );
+const GeneralChats = lazy(
+  () => import("@/pages/GeneralSettings/Chats")
+);
 
 export default function App() {
   return (
@@ -129,9 +137,19 @@ export default function App() {
                     element={<AdminRoute Component={GeneralLLMPreference} />}
                   />
                   <Route
-                    path="/settings/transcription-preference"
+                    path={paths.settings.transcriptionPreference()}
                     element={
-                      <AdminRoute Component={GeneralTranscriptionPreference} />
+                      <AdminRoute>
+                        <TranscriptionSettings />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/chat-sessions"
+                    element={
+                      <AdminRoute>
+                        <ChatDashboard />
+                      </AdminRoute>
                     }
                   />
                   <Route
