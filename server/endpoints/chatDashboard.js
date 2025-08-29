@@ -15,6 +15,19 @@ try {
 function chatDashboardEndpoints(app) {
   if (!app) return;
 
+  // Serve the responsive dashboard HTML
+  app.get("/dashboard/chat-sessions", (request, response) => {
+    const path = require('path');
+    const fs = require('fs');
+    const dashboardPath = path.join(__dirname, '../responsive-dashboard.html');
+    
+    if (fs.existsSync(dashboardPath)) {
+      response.sendFile(dashboardPath);
+    } else {
+      response.status(404).send('Dashboard not found');
+    }
+  });
+
   // Get all chat sessions for dashboard
   app.get("/chat-dashboard/sessions", async (request, response) => {
     try {
@@ -332,7 +345,11 @@ async function getPrechatUsers() {
       db.all(query, [], (err, rows) => {
         db.close();
         if (err) {
-          console.error('Database query error:', err);
+          if (err.code === 'SQLITE_ERROR' && err.message.includes('no such table')) {
+            console.log('Prechat submissions table not found - this is normal if prechat widget is not set up');
+          } else {
+            console.error('Database query error:', err);
+          }
           resolve([]); // Return empty array on error
           return;
         }

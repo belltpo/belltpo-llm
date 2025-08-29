@@ -2,7 +2,7 @@ from django.db import models
 
 class PrechatSubmission(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)  # Make email unique to prevent duplicates
+    email = models.EmailField()  # Remove unique constraint to allow multiple submissions
     mobile = models.CharField(max_length=20)
     region = models.CharField(max_length=50)
     session_token = models.CharField(max_length=255, unique=True, null=True, blank=True)

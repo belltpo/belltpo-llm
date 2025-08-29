@@ -391,3 +391,5 @@ model workspace_parsed_files {
   @@index([workspaceId])
   @@index([userId])
 }
+
+

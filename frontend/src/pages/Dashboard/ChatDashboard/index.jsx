@@ -17,6 +17,61 @@ export default function ChatDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    
+    // Setup WebSocket for real-time updates
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+    
+    let ws;
+    try {
+      ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('Dashboard WebSocket connected');
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        switch (data.type) {
+          case 'NEW_PRECHAT_SUBMISSION':
+            console.log('New prechat submission received:', data.data);
+            fetchDashboardData(); // Refresh data when new submission received
+            break;
+          case 'NEW_CHAT_MESSAGE':
+            console.log('New chat message received:', data.data);
+            fetchDashboardData(); // Refresh data when new message received
+            break;
+          case 'DASHBOARD_INIT':
+          case 'SESSIONS_UPDATE':
+            if (data.data?.sessions) {
+              setSessions(data.data.sessions);
+            }
+            break;
+          case 'STATS_UPDATE':
+            if (data.data) {
+              setStats(data.data);
+            }
+            break;
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.warn('Dashboard WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('Dashboard WebSocket disconnected');
+      };
+    } catch (error) {
+      console.warn('Failed to create dashboard WebSocket:', error);
+    }
+    
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
   }, [selectedEmbed]);
 
   const fetchDashboardData = async () => {
@@ -162,6 +217,11 @@ export default function ChatDashboard() {
                           <div className="text-sm text-gray-500 truncate">
                             {session.userEmail || session.sessionId.slice(0, 8)}
                           </div>
+                          {session.userMobile && (
+                            <div className="text-xs text-gray-400 truncate">
+                              📱 {session.userMobile}
+                            </div>
+                          )}
                           <div className="text-xs text-gray-400 flex items-center mt-1">
                             <Clock size={12} className="mr-1" />
                             {formatDistanceToNow(new Date(session.lastActivity), { addSuffix: true })}

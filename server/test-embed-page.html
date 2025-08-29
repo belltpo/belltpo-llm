@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test BellTPO Chat Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 200vh;
+        }
+        
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🔔 BellTPO Chat Widget Test Page</h1>
+        
+        <div class="test-section">
+            <h3>Widget Test Instructions:</h3>
+            <ol>
+                <li>Look for the chat widget button in the bottom-right corner</li>
+                <li>Click the button to open the chat interface</li>
+                <li>Fill out the prechat form with your details</li>
+                <li>Test sending messages in the chat</li>
+                <li>Verify real-time responses</li>
+            </ol>
+        </div>
+        
+        <p>This page tests the BellTPO chat widget integration. The widget should appear as a floating button in the bottom-right corner of your screen.</p>
+        
+        <p>The chat widget includes:</p>
+        <ul>
+            <li>Prechat form for user details (name, email, mobile, region)</li>
+            <li>Real-time chat interface</li>
+            <li>WebSocket connectivity for live updates</li>
+            <li>Responsive design for mobile and desktop</li>
+        </ul>
+        
+        <p>Scroll down to test the widget's fixed positioning...</p>
+        
+        <div style="height: 800px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: white;">
+            <div style="text-align: center;">
+                <h2>Scroll Test Area</h2>
+                <p>The chat widget should remain fixed in the bottom-right corner</p>
+                <p>even when scrolling through this content.</p>
+            </div>
+        </div>
+        
+        <p>Additional test content to verify scrolling behavior...</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        
+        <div class="test-section">
+            <h3>Expected Behavior:</h3>
+            <ul>
+                <li>Widget button appears in bottom-right corner</li>
+                <li>Button remains fixed during scrolling</li>
+                <li>Clicking opens the chat interface</li>
+                <li>Prechat form collects user information</li>
+                <li>Chat messages send and receive properly</li>
+                <li>No console errors related to React</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BellTPO Chat Widget Script -->
+    <script
+        data-embed-id="1"
+        data-base-api-url="http://localhost:3001/api/embed"
+        data-brand-color="#3DBEF5"
+        data-text-color="#FFFFFF"
+        data-assistant-name="BellTPO Assistant"
+        data-assistant-icon="💬"
+        data-window-height="700"
+        data-window-width="400"
+        data-position="bottom-right"
+        data-open-on-load="false"
+        data-support-email="support@belltpo.com"
+        src="http://localhost:3001/embed/anythingllm-chat-widget.js">
+    </script>
+</body>
+</html>

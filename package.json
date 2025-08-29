@@ -9,6 +9,12 @@
   "engines": {
     "node": ">=18"
   },
+  "workspaces": [
+    "server",
+    "frontend",
+    "collector",
+    "embed"
+  ],
   "scripts": {
     "test": "jest",
     "lint": "cd server && yarn lint && cd ../frontend && yarn lint && cd ../collector && yarn lint",
@@ -32,7 +38,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "swagger-autogen": "^2.23.7"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0"

@@ -30,6 +30,7 @@ const { agentFlowEndpoints } = require("./endpoints/agentFlows");
 const { mcpServersEndpoints } = require("./endpoints/mcpServers");
 const { mobileEndpoints } = require("./endpoints/mobile");
 const { chatDashboardEndpoints } = require("./endpoints/chatDashboard");
+const { websocketDashboardEndpoints } = require("./endpoints/websocketDashboard");
 const app = express();
 const apiRouter = express.Router();
 const FILE_LIMIT = "3GB";
@@ -70,11 +71,17 @@ mcpServersEndpoints(apiRouter);
 mobileEndpoints(apiRouter);
 chatDashboardEndpoints(apiRouter);
 
+// WebSocket endpoints for real-time dashboard updates
+websocketDashboardEndpoints(app);
+
 // Externally facing embedder endpoints
 embeddedEndpoints(apiRouter);
 
 // Externally facing browser extension endpoints
 browserExtensionEndpoints(apiRouter);
+
+// Serve embed widget files in all environments
+app.use("/embed", express.static(path.resolve(__dirname, "../embed/dist")));
 
 if (process.env.NODE_ENV !== "development") {
   const { MetaGenerator } = require("./utils/boot/MetaGenerator");
