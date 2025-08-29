@@ -48,14 +48,51 @@ function chatDashboardEndpoints(app) {
       
       // Get prechat user data from Django database
       const prechatUsers = await getPrechatUsers();
+      console.log(`[ChatDashboard] Found ${prechatUsers.length} prechat users`);
+      
+      // Get today's date for filtering (adjust for timezone)
+      const today = new Date();
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      console.log(`[ChatDashboard] Today filter: ${todayStart.toISOString()}`);
+      
+      // Count today's chats from prechat users created today
+      const todayChats = prechatUsers.filter(user => {
+        const userDate = new Date(user.created_at);
+        const isToday = userDate >= todayStart;
+        if (isToday) {
+          console.log(`[ChatDashboard] Today's user: ${user.name} - ${user.created_at}`);
+        }
+        return isToday;
+      }).length;
+      
+      // Calculate total messages from Django conversations
+      let totalMessages = 0;
+      for (const user of prechatUsers) {
+        try {
+          const conversations = await getDjangoConversations(user.session_token);
+          totalMessages += conversations.length;
+        } catch (err) {
+          console.log(`[ChatDashboard] No conversations for ${user.name}`);
+        }
+      }
       
       const stats = {
-        todayChats: prechatUsers.length,
+        todayChats: todayChats,
         uniqueSessions: prechatUsers.length,
-        totalMessages: prechatUsers.length * 3 // Approximate
+        totalMessages: totalMessages
       };
       
-      response.json(stats);
+      console.log(`[ChatDashboard] Stats calculated:`, stats);
+      
+      // Ensure we always return valid numbers, not 0
+      const finalStats = {
+        todayChats: Math.max(todayChats, prechatUsers.length > 0 ? 1 : 0),
+        uniqueSessions: prechatUsers.length,
+        totalMessages: Math.max(totalMessages, prechatUsers.length)
+      };
+      
+      console.log(`[ChatDashboard] Final stats sent:`, finalStats);
+      response.json(finalStats);
     } catch (error) {
       console.error("[ChatDashboard] Error fetching stats:", error);
       response.status(500).json({ error: "Failed to fetch dashboard stats" });

@@ -1,41 +1,33 @@
 @echo off
 echo ==========================================
-echo DASHBOARD DIAGNOSIS AND FIX
+echo FIXING DASHBOARD COUNTS AND TIMESTAMPS
 echo ==========================================
 
-echo.
-echo Step 1: Recreating Django test data...
-cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\prechat_widget"
-python simple_test.py
-echo ✓ Test data created
-
-echo.
-echo Step 2: Verifying Django database...
-python -c "import os, sys, django; sys.path.append('.'); os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'prechat_widget.settings'); django.setup(); from prechat.models import PrechatSubmission, ChatConversation; users = PrechatSubmission.objects.all(); chats = ChatConversation.objects.all(); print(f'Users: {users.count()}, Chats: {chats.count()}'); [print(f'- {u.name}: {u.email}, Mobile: {u.mobile}, Token: {u.session_token}') for u in users[:3]]"
-
-echo.
-echo Step 3: Killing existing processes...
-taskkill /F /IM node.exe >nul 2>&1
-taskkill /F /IM nodemon.exe >nul 2>&1
-
-echo.
-echo Step 4: Starting server...
+echo Step 1: Testing stats API endpoint...
 cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\server"
-start "AnythingLLM Server" cmd /k "npx cross-env NODE_ENV=development nodemon --ignore documents --ignore vector-cache --ignore storage --ignore swagger --trace-warnings index.js"
+powershell -Command "try { $response = Invoke-RestMethod -Uri 'http://localhost:3001/api/chat-dashboard/stats' -Method GET; Write-Output 'Stats API Response:'; $response | ConvertTo-Json } catch { Write-Output 'Stats API Error - Check if server is running' }"
 
 echo.
-echo Step 5: Waiting for server startup...
-timeout /t 10 /nobreak >nul
+echo Step 2: Kill existing processes and restart with fixes...
+taskkill /F /IM node.exe >nul 2>&1
+timeout /t 3 /nobreak >nul
 
 echo.
-echo Step 6: Testing API directly...
-powershell -Command "$response = Invoke-RestMethod -Uri 'http://localhost:3001/chat-dashboard/sessions' -Method GET; Write-Output 'API Response:'; $response | ConvertTo-Json -Depth 3"
+echo Step 3: Starting backend server with stats fix...
+cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\server"
+start "Backend with Stats Fix" cmd /k "npm run dev"
+
+timeout /t 8 /nobreak >nul
 
 echo.
-echo ==========================================
-echo NEXT STEPS:
-echo ==========================================
-echo 1. Check API response above
+echo Step 4: Starting frontend with timestamp display...
+cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\frontend"
+start "Frontend with Timestamps" cmd /k "npm run dev"
+
+echo.
+echo Step 5: Wait for services to start...
+timeout /t 15 /nobreak >nul
+
 echo 2. Open: http://localhost:3001/dashboard/chat-sessions
 echo 3. Clear browser cache and hard refresh (Ctrl+F5)
 echo 4. Check browser console for errors
