@@ -29,6 +29,40 @@ export default function ChatDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    
+    // Set up WebSocket for real-time updates
+    const ws = new WebSocket('ws://localhost:3001/ws');
+    
+    ws.onopen = () => {
+      console.log('Dashboard WebSocket connected');
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'new_chat_session') {
+          console.log('New chat session detected, refreshing dashboard');
+          fetchDashboardData();
+        }
+      } catch (error) {
+        console.log('WebSocket message error:', error);
+      }
+    };
+    
+    ws.onclose = () => {
+      console.log('Dashboard WebSocket disconnected');
+    };
+    
+    ws.onerror = (error) => {
+      console.log('Dashboard WebSocket error:', error);
+    };
+    
+    // Cleanup WebSocket on unmount
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
   }, [selectedEmbed]);
 
   const fetchDashboardData = async () => {
@@ -145,11 +179,11 @@ export default function ChatDashboard() {
             <div className="p-4 border-b border-theme-modal-border">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.todayChats || 0}</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{sessions.length || 0}</div>
                   <div className="text-sm text-blue-600 dark:text-blue-400">Today's Chats</div>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.uniqueSessions || 0}</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{sessions.length || 0}</div>
                   <div className="text-sm text-green-600 dark:text-green-400">Total Sessions</div>
                 </div>
               </div>
