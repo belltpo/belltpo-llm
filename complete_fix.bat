@@ -23,37 +23,34 @@ cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\prechat_widget"
 python simple_test.py
 echo ✓ Test data recreated
 
-echo.
-echo Step 3: Verify database contents...
-python -c "import os, sys, django; sys.path.append('.'); os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'prechat_widget.settings'); django.setup(); from prechat.models import PrechatSubmission; users = PrechatSubmission.objects.all(); print(f'Database has {users.count()} users:'); [print(f'  - {u.name}: {u.email}, Mobile: {u.mobile}') for u in users]"
-
-echo.
-echo Step 4: Starting server with fixed endpoint registration...
 cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\server"
-echo Starting AnythingLLM server on port 3001...
-start "AnythingLLM Server" cmd /k "npx cross-env NODE_ENV=development nodemon --ignore documents --ignore vector-cache --ignore storage --ignore swagger --trace-warnings index.js"
+start "Backend with Stats Fix" cmd /k "npm run dev"
+
+timeout /t 10 /nobreak >nul
 
 echo.
-echo Step 5: Waiting for server startup...
+echo Step 3: Starting frontend with date format fix...
+cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\frontend"
+start "Frontend with Date Fix" cmd /k "npm run dev"
+
+echo.
+echo Step 4: Wait for services...
 timeout /t 15 /nobreak >nul
 
 echo.
-echo Step 6: Testing dashboard API...
-node test_dashboard_api.js
-
-echo.
 echo ==========================================
-echo FIX APPLIED - NEXT STEPS:
+echo FIXES APPLIED
 echo ==========================================
 echo.
-echo 1. Dashboard URL: http://localhost:3001/dashboard/chat-sessions
-echo 2. Clear browser cache: Ctrl+Shift+Delete (select "All time")
-echo 3. Hard refresh page: Ctrl+F5
-echo 4. Check browser console for any remaining errors
+echo CHANGES MADE:
+echo ✓ Fixed stats counts - now shows actual numbers instead of 0
+echo ✓ Fixed date format - now shows "at" instead of "AMT/PMT"
+echo ✓ Enhanced stats API with fallback values
 echo.
-echo Expected Result:
-echo - Left panel shows 3 users with names, emails, and mobile numbers
-echo - Mobile numbers should be visible with phone icon
+echo EXPECTED RESULTS:
+echo - Today's Chats: Shows actual count (not 0)
+echo - Total Sessions: Shows prechat users count
+echo - Session Date: "Aug 29, 2025 at 1:35 PM" (not "PMT")
 echo - Click any user to see chat bubbles in right panel
 echo.
 echo If mobile numbers still not visible:

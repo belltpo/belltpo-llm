@@ -9,7 +9,8 @@ import {
   Envelope,
   Phone,
   MapPin,
-  ChartBar
+  ChartBar,
+  Calendar
 } from "@phosphor-icons/react";
 import Sidebar from "@/components/Sidebar";
 import { FullScreenLoader } from "@/components/Preloader";
@@ -274,7 +275,11 @@ export default function ChatDashboard() {
                           </div>
                           <div className="flex items-center">
                             <Clock size={14} className="mr-2" />
-                            First seen: {moment(selectedSession.firstSeen).fromNow()}
+                            Last Seen: {moment(selectedSession.firstSeen).fromNow()}
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar size={14} className="mr-2" />
+                            Session Date: {moment(selectedSession.firstSeen).format('MMM DD, YYYY [at] h:mm A')}
                           </div>
                         </div>
                       </div>
@@ -310,7 +315,7 @@ export default function ChatDashboard() {
                                 </div>
                               </div>
                               <div className="text-xs text-theme-text-secondary text-right">
-                                User • {moment(message.timestamp).fromNow()}
+                              {selectedSession.userName || "Anonymous User"} • {moment(message.timestamp).fromNow()}
                               </div>
                             </>
                           )}
@@ -324,7 +329,7 @@ export default function ChatDashboard() {
                                 </div>
                               </div>
                               <div className="text-xs text-theme-text-secondary text-left">
-                                Assistant • {moment(message.timestamp).fromNow()}
+                                Bell Chat Assistant • {moment(message.timestamp).fromNow()}
                               </div>
                             </>
                           )}
