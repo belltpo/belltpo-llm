@@ -61,15 +61,18 @@ export default function ChatDashboard() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Session details response:", data);
+        
         // Transform the chat history to match expected format
         const transformedHistory = (data.chatHistory || []).map(chat => ({
           id: chat.id,
-          userMessage: chat.prompt,
-          assistantMessage: chat.response,
-          timestamp: chat.createdAt
+          userMessage: chat.userMessage || chat.prompt,
+          assistantMessage: chat.assistantMessage || chat.response,
+          timestamp: chat.timestamp || chat.createdAt
         }));
+        
         setChatHistory(transformedHistory);
-        setSelectedSession(data.session || null);
+        setSelectedSession(data.sessionInfo || data.session || null);
       } else {
         console.error("Failed to fetch session details");
         setChatHistory([]);
