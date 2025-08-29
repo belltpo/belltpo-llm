@@ -194,8 +194,15 @@ export default function ChatDashboard() {
                             {session.userName || "Anonymous User"}
                           </div>
                           <div className="text-sm text-theme-text-secondary truncate">
+                            <Envelope size={12} className="inline mr-1" />
                             {session.userEmail || session.sessionId.slice(0, 8)}
                           </div>
+                          {session.userMobile && (
+                            <div className="text-sm text-theme-text-secondary truncate">
+                              <Phone size={12} className="inline mr-1" />
+                              {session.userMobile}
+                            </div>
+                          )}
                           <div className="text-xs text-theme-text-secondary flex items-center mt-1">
                             <Clock size={12} className="mr-1" />
                             {moment(session.lastActivity).fromNow()}

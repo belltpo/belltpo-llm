@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .session { border: 1px solid #ccc; margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .user-details { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard API Test</h1>
+    <button onclick="testAPI()">Test Sessions API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/chat-dashboard/sessions');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>API Response (Status: ${response.status})</h3>
+                            <p><strong>Total Sessions:</strong> ${data.total}</p>
+                            <div id="sessions"></div>
+                        </div>
+                    `;
+                    
+                    const sessionsDiv = document.getElementById('sessions');
+                    
+                    if (data.sessions && data.sessions.length > 0) {
+                        data.sessions.forEach((session, index) => {
+                            sessionsDiv.innerHTML += `
+                                <div class="session">
+                                    <h4>Session ${index + 1}</h4>
+                                    <div class="user-details">
+                                        <p><strong>Name:</strong> ${session.userName || 'N/A'}</p>
+                                        <p><strong>Email:</strong> ${session.userEmail || 'N/A'}</p>
+                                        <p><strong>Mobile:</strong> ${session.userMobile || 'N/A'}</p>
+                                        <p><strong>Region:</strong> ${session.userRegion || 'N/A'}</p>
+                                        <p><strong>Messages:</strong> ${session.messageCount || 0}</p>
+                                        <p><strong>Status:</strong> ${session.status || 'N/A'}</p>
+                                        <p><strong>Session ID:</strong> ${session.sessionId || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        sessionsDiv.innerHTML = '<p>No sessions found in API response</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = `<div class="error">API Error: ${response.status} - ${data.message || 'Unknown error'}</div>`;
+                }
+                
+                // Show raw response for debugging
+                resultsDiv.innerHTML += `
+                    <details>
+                        <summary>Raw API Response</summary>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Request failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = () => {
+            setTimeout(testAPI, 1000);
+        };
+    </script>
+</body>
+</html>

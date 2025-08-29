@@ -4,7 +4,7 @@ const path = require("path");
 const documentsPath =
   process.env.NODE_ENV === "development"
     ? path.resolve(__dirname, `../../storage/documents`)
-    : path.resolve(process.env.STORAGE_DIR, `documents`);
+    : path.resolve(process.env.STORAGE_DIR || __dirname, `documents`);
 
 class DocumentManager {
   constructor({ workspace = null, maxTokens = null }) {

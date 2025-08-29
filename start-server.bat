@@ -47,9 +47,29 @@ echo Setting up database...
 call npx prisma generate
 call npx prisma migrate dev --name init
 
+@echo off
+echo ==========================================
+echo COMPLETE SERVER STARTUP FIX
+echo ==========================================
+
+echo Step 1: Killing existing processes...
+taskkill /F /IM node.exe >nul 2>&1
+taskkill /F /IM nodemon.exe >nul 2>&1
+echo ✓ Processes stopped
+
 echo.
-echo Starting AnythingLLM server...
+echo Step 2: Recreating Django test data...
+cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\prechat_widget"
+python simple_test.py
+echo ✓ Test data created
+
+echo.
+echo Step 3: Starting AnythingLLM Server on port 3001...
+cd /d "c:\Users\Gokul\Documents\Anything_Aug-18\anything-llm\server"
 echo Server will be available at: http://localhost:3001
+echo Dashboard URL: http://localhost:3001/dashboard/chat-sessions
+echo.
+npm run devailable at: http://localhost:3001
 echo Press Ctrl+C to stop the server
 echo.
 
