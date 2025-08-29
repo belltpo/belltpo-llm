@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 80vh;
+        }
+        .sessions-panel {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chat-panel {
+            flex: 2;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .session-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .session-item:hover {
+            background-color: #f0f0f0;
+        }
+        .session-item.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .session-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .session-email {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .session-count {
+            color: #888;
+            font-size: 0.8em;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20px;
+        }
+        .assistant-message {
+            background-color: #f5f5f5;
+            margin-right: 20px;
+        }
+        .message-role {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Dashboard Test</h1>
+    
+    <div class="status" id="status">
+        <strong>Status:</strong> <span id="statusText">Initializing...</span>
+    </div>
+    
+    <div>
+        <button onclick="testConnection()">Test Connection</button>
+        <button onclick="loadSessions()">Load Sessions</button>
+        <button onclick="createTestData()">Create Test Data</button>
+        <button onclick="clearData()">Clear All</button>
+    </div>
+    
+    <div class="container">
+        <div class="sessions-panel">
+            <h3>Chat Sessions</h3>
+            <div id="sessionsList">
+                <div class="loading">Click "Load Sessions" to start</div>
+            </div>
+        </div>
+        
+        <div class="chat-panel">
+            <h3>Chat History</h3>
+            <div id="chatHistory">
+                <div class="loading">Select a session to view chat history</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        let sessions = [];
+        let selectedSessionId = null;
+
+        function updateStatus(message, isError = false) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = message;
+            statusText.style.color = isError ? '#f44336' : '#4caf50';
+        }
+
+        async function testConnection() {
+            try {
+                updateStatus('Testing connection...');
+                const response = await fetch(`${API_BASE}/api/test`);
+                const data = await response.json();
+                updateStatus(`Connection successful! Server running on port ${data.port}`);
+                console.log('Connection test:', data);
+            } catch (error) {
+                updateStatus(`Connection failed: ${error.message}`, true);
+                console.error('Connection test failed:', error);
+            }
+        }
+
+        async function loadSessions() {
+            try {
+                updateStatus('Loading sessions...');
+                const response = await fetch(`${API_BASE}/api/alternative-dashboard/sessions`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                sessions = data.sessions || [];
+                
+                updateStatus(`Loaded ${sessions.length} sessions successfully`);
+                displaySessions(sessions);
+                console.log('Sessions loaded:', data);
+                
+            } catch (error) {
+                updateStatus(`Failed to load sessions: ${error.message}`, true);
+                console.error('Load sessions failed:', error);
+                document.getElementById('sessionsList').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displaySessions(sessions) {
+            const sessionsList = document.getElementById('sessionsList');
+            
+            if (sessions.length === 0) {
+                sessionsList.innerHTML = '<div class="loading">No sessions found. Try creating test data.</div>';
+                return;
+            }
+            
+            sessionsList.innerHTML = sessions.map(session => `
+                <div class="session-item" onclick="selectSession('${session.sessionId}')">
+                    <div class="session-name">${session.userName}</div>
+                    <div class="session-email">${session.userEmail || 'No email'}</div>
+                    <div class="session-count">${session.messageCount} messages • ${session.status}</div>
+                </div>
+            `).join('');
+        }
+
+        async function selectSession(sessionId) {
+            try {
+                selectedSessionId = sessionId;
+                
+                // Update UI
+                document.querySelectorAll('.session-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                event.target.closest('.session-item').classList.add('selected');
+                
+                updateStatus(`Loading chat history for session ${sessionId}...`);
+                
+                const response = await fetch(`${API_BASE}/api/alternative-dashboard/sessions/${sessionId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                displayChatHistory(data.chatHistory || []);
+                updateStatus(`Loaded chat history for ${data.sessionInfo.userName}`);
+                console.log('Session details:', data);
+                
+            } catch (error) {
+                updateStatus(`Failed to load chat history: ${error.message}`, true);
+                console.error('Load chat history failed:', error);
+                document.getElementById('chatHistory').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayChatHistory(chatHistory) {
+            const chatHistoryDiv = document.getElementById('chatHistory');
+            
+            if (chatHistory.length === 0) {
+                chatHistoryDiv.innerHTML = '<div class="loading">No chat history found</div>';
+                return;
+            }
+            
+            chatHistoryDiv.innerHTML = chatHistory.map(message => `
+                <div class="chat-message ${message.role}-message">
+                    <div class="message-role">${message.role === 'user' ? 'User' : 'Assistant'}:</div>
+                    <div>${message.prompt || message.response || 'No content'}</div>
+                </div>
+            `).join('');
+        }
+
+        async function createTestData() {
+            try {
+                updateStatus('Creating test data...');
+                const response = await fetch(`${API_BASE}/api/create-test-data`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    updateStatus('Test data created successfully');
+                    loadSessions(); // Reload sessions
+                } else {
+                    updateStatus('Test data creation may have failed - check server logs', true);
+                }
+            } catch (error) {
+                updateStatus(`Failed to create test data: ${error.message}`, true);
+                console.error('Create test data failed:', error);
+            }
+        }
+
+        async function clearData() {
+            if (confirm('Are you sure you want to clear all chat data?')) {
+                try {
+                    updateStatus('Clearing data...');
+                    // This would need a backend endpoint
+                    updateStatus('Clear data functionality not implemented yet', true);
+                } catch (error) {
+                    updateStatus(`Failed to clear data: ${error.message}`, true);
+                }
+            }
+        }
+
+        // Auto-test connection on load
+        window.addEventListener('load', () => {
+            testConnection();
+        });
+    </script>
+</body>
+</html>

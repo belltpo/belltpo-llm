@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Embed Widget - Mickey Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-buttons {
+            margin: 20px 0;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        #results {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Embed Widget - Mickey Chat</h1>
+        
+        <div class="debug-info">
+            <strong>Debug Info:</strong><br>
+            Current Time: <span id="currentTime"></span><br>
+            Session ID: <span id="sessionId"></span><br>
+            Embed ID: <span id="embedId"></span><br>
+            Base API URL: <span id="baseApiUrl"></span>
+        </div>
+
+        <div class="test-buttons">
+            <button onclick="testEmbedWidget()">🚀 Load Embed Widget</button>
+            <button onclick="sendTestMessage()">💬 Send Test Message as Mickey</button>
+            <button onclick="checkDatabase()">🔍 Check Database for Mickey</button>
+            <button onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Generate session ID for Mickey
+        const sessionId = 'mickey_' + Date.now();
+        const embedId = 'default-embed'; // Adjust this to your actual embed ID
+        const baseApiUrl = 'http://localhost:3001';
+        
+        // Update debug info
+        document.getElementById('currentTime').textContent = new Date().toISOString();
+        document.getElementById('sessionId').textContent = sessionId;
+        document.getElementById('embedId').textContent = embedId;
+        document.getElementById('baseApiUrl').textContent = baseApiUrl;
+        
+        function log(message) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').textContent = '';
+        }
+        
+        async function testEmbedWidget() {
+            log('🚀 Testing Embed Widget Load...');
+            
+            try {
+                // First check if embed config exists
+                const configResponse = await fetch(`${baseApiUrl}/api/embed/${embedId}`);
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    log(`✅ Embed config found: ${config.workspace || 'Unknown workspace'}`);
+                } else {
+                    log(`❌ Embed config not found (${configResponse.status})`);
+                    return;
+                }
+                
+                // Load the embed widget script
+                const script = document.createElement('script');
+                script.src = `${baseApiUrl}/embed/anythingllm-chat-widget.min.js`;
+                script.setAttribute('data-embed-id', embedId);
+                script.setAttribute('data-base-api-url', baseApiUrl);
+                script.setAttribute('data-brand-color', '#007cba');
+                script.setAttribute('data-text-color', '#ffffff');
+                script.setAttribute('data-assistant-name', 'BellTPO Assistant');
+                script.setAttribute('data-window-height', '700');
+                script.setAttribute('data-window-width', '400');
+                script.setAttribute('data-position', 'bottom-right');
+                script.setAttribute('data-open-on-load', 'on');
+                
+                script.onload = () => {
+                    log('✅ Embed widget script loaded successfully');
+                };
+                
+                script.onerror = () => {
+                    log('❌ Failed to load embed widget script');
+                };
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                log(`❌ Error testing embed widget: ${error.message}`);
+            }
+        }
+        
+        async function sendTestMessage() {
+            log('💬 Sending test message as Mickey...');
+            
+            try {
+                const messageData = {
+                    sessionId: sessionId,
+                    message: 'Hello, this is Mickey testing the chat widget!',
+                    userFormData: {
+                        name: 'Mickey',
+                        email: 'mickey@example.com',
+                        mobile: '+1234567890',
+                        region: 'Test Region'
+                    }
+                };
+                
+                log(`📤 Sending message with session: ${sessionId}`);
+                log(`📤 User data: ${JSON.stringify(messageData.userFormData)}`);
+                
+                const response = await fetch(`${baseApiUrl}/embed/${embedId}/stream-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(messageData)
+                });
+                
+                if (response.ok) {
+                    log('✅ Message sent successfully');
+                    
+                    // Read the streaming response
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.substring(6));
+                                    if (data.textResponse) {
+                                        log(`🤖 AI Response: ${data.textResponse}`);
+                                    }
+                                } catch (e) {
+                                    // Ignore parsing errors for streaming data
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Wait a moment then check database
+                    setTimeout(() => checkDatabase(), 2000);
+                    
+                } else {
+                    log(`❌ Failed to send message (${response.status})`);
+                    const errorText = await response.text();
+                    log(`Error details: ${errorText}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error sending test message: ${error.message}`);
+            }
+        }
+        
+        async function checkDatabase() {
+            log('🔍 Checking database for Mickey...');
+            
+            try {
+                // Check our debug endpoint
+                const response = await fetch(`${baseApiUrl}/api/debug-mickey`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`📊 Database check results:`);
+                    log(`   Mickey chats found: ${data.mickeyChats || 0}`);
+                    log(`   Total sessions: ${data.totalSessions || 0}`);
+                    
+                    if (data.recentChats && data.recentChats.length > 0) {
+                        log(`📋 Recent chats:`);
+                        data.recentChats.forEach((chat, index) => {
+                            log(`   ${index + 1}. ${chat.name || 'Anonymous'} (${chat.email || 'No email'}): "${chat.prompt}"`);
+                        });
+                    }
+                } else {
+                    log(`❌ Failed to check database (${response.status})`);
+                }
+                
+                // Also check dashboard sessions
+                const sessionsResponse = await fetch(`${baseApiUrl}/api/chat-dashboard/sessions`);
+                if (sessionsResponse.ok) {
+                    const sessionsData = await sessionsResponse.json();
+                    log(`📊 Dashboard sessions: ${sessionsData.sessions?.length || 0}`);
+                    
+                    const mickeySession = sessionsData.sessions?.find(s => 
+                        s.userName?.toLowerCase().includes('mickey') || 
+                        s.userEmail?.toLowerCase().includes('mickey')
+                    );
+                    
+                    if (mickeySession) {
+                        log(`✅ Mickey found in dashboard: ${mickeySession.userName} (${mickeySession.messageCount} messages)`);
+                    } else {
+                        log(`❌ Mickey not found in dashboard sessions`);
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking database: ${error.message}`);
+            }
+        }
+        
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            log('🌐 Page loaded - Ready to test embed widget');
+            log(`🔧 Using session ID: ${sessionId}`);
+        });
+    </script>
+</body>
+</html>
