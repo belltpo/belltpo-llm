@@ -69,7 +69,7 @@ communityHubEndpoints(apiRouter);
 agentFlowEndpoints(apiRouter);
 mcpServersEndpoints(apiRouter);
 mobileEndpoints(apiRouter);
-chatDashboardEndpoints(apiRouter);
+chatDashboardEndpoints(app);
 
 // WebSocket endpoints for real-time dashboard updates
 websocketDashboardEndpoints(app);
