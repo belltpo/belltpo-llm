@@ -409,18 +409,44 @@ class GeminiLLM {
   }
 
   async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
-    const measuredStreamRequest = await LLMPerformanceMonitor.measureStream(
-      this.openai.chat.completions.create({
-        model: this.model,
-        stream: true,
+    try {
+      const measuredStreamRequest = await LLMPerformanceMonitor.measureStream(
+        this.openai.chat.completions.create({
+          model: this.model,
+          stream: true,
+          messages,
+          temperature: temperature,
+        }),
         messages,
-        temperature: temperature,
-      }),
-      messages,
-      true
-    );
+        true
+      );
 
-    return measuredStreamRequest;
+      return measuredStreamRequest;
+    } catch (error) {
+      if (error.status === 429) {
+        console.warn('[GeminiLLM] Rate limit hit, waiting 2 seconds before retry...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Single retry attempt
+        try {
+          const retryRequest = await LLMPerformanceMonitor.measureStream(
+            this.openai.chat.completions.create({
+              model: this.model,
+              stream: true,
+              messages,
+              temperature: temperature,
+            }),
+            messages,
+            true
+          );
+          return retryRequest;
+        } catch (retryError) {
+          console.error('[GeminiLLM] Rate limit retry failed:', retryError.message);
+          throw new Error('Service temporarily unavailable due to high demand. Please try again in a moment.');
+        }
+      }
+      throw error;
+    }
   }
 
   handleStream(response, stream, responseProps) {
