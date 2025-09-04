@@ -1,0 +1,31 @@
+networks:
+  anythingllm-local:
+    driver: bridge
+
+services:
+  anythingllm-local:
+    container_name: anythingllm-local
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        ARG_UID: 1000
+        ARG_GID: 1000
+    cap_add:
+      - SYS_ADMIN
+    ports:
+      - "3001:3001"
+    volumes:
+      - "./docker/.env:/app/server/.env"
+      - "./server/storage:/app/server/storage"
+      - "./collector/hotdir:/app/collector/hotdir"
+      - "./collector/outputs:/app/collector/outputs"
+      - "./prechat_widget:/app/prechat_widget"
+    environment:
+      - STORAGE_DIR=/app/server/storage
+      - SERVER_PORT=3001
+    networks:
+      - anythingllm-local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

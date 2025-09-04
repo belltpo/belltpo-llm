@@ -1,0 +1,167 @@
+FROM ubuntu:jammy-20240627.1
+
+# Install system dependencies with better network handling
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        ca-certificates \
+        curl \
+        wget \
+        gnupg \
+        lsb-release \
+        software-properties-common \
+        python3 \
+        python3-pip \
+        python3-dev \
+        build-essential \
+        git \
+        supervisor && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# Install Yarn
+RUN npm install -g yarn@1.22.19
+
+# Create user
+RUN groupadd -g "1000" anythingllm && \
+    useradd -l -u "1000" -g "1000" -s /bin/bash -m anythingllm
+
+# Set working directory
+WORKDIR /app
+
+# Copy and build frontend first (smallest layer)
+COPY --chown=anythingllm:anythingllm ./frontend /app/frontend/
+WORKDIR /app/frontend
+USER anythingllm
+RUN yarn install --network-timeout 600000 --network-concurrency 1 && \
+    yarn build && \
+    yarn cache clean
+
+# Copy and install server dependencies
+WORKDIR /app/server
+COPY --chown=anythingllm:anythingllm ./server/package*.json /app/server/
+USER root
+# Install sharp separately with retries to avoid network issues
+RUN npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm install sharp@0.32.6 --verbose || \
+    npm install sharp@0.32.6 --verbose || \
+    npm install sharp@0.32.6 --verbose
+USER anythingllm
+RUN yarn install --production --network-timeout 600000 --network-concurrency 1 && \
+    yarn cache clean
+
+# Copy server files
+COPY --chown=anythingllm:anythingllm ./server /app/server/
+
+# Copy and install collector
+WORKDIR /app/collector
+COPY --chown=anythingllm:anythingllm ./collector/package*.json /app/collector/
+USER anythingllm
+RUN yarn install --production --network-timeout 600000 --network-concurrency 1 && \
+    yarn cache clean
+COPY --chown=anythingllm:anythingllm ./collector /app/collector/
+
+# Copy and install embed
+WORKDIR /app/embed
+COPY --chown=anythingllm:anythingllm ./embed/package*.json /app/embed/
+USER anythingllm
+RUN yarn install --production --network-timeout 600000 --network-concurrency 1 && \
+    yarn build && \
+    yarn cache clean
+COPY --chown=anythingllm:anythingllm ./embed /app/embed/
+
+# Setup prechat widget (Django)
+WORKDIR /app/prechat_widget
+COPY --chown=anythingllm:anythingllm ./prechat_widget /app/prechat_widget/
+USER root
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir -r requirements.txt
+USER anythingllm
+
+# Set environment variables
+ENV USE_SQLITE=true
+ENV STORAGE_DIR=/app/server/storage
+ENV NODE_ENV=production
+
+# Create storage directories
+USER root
+RUN mkdir -p /app/server/storage && \
+    mkdir -p /app/collector/hotdir && \
+    mkdir -p /app/collector/outputs && \
+    chown -R anythingllm:anythingllm /app/server/storage && \
+    chown -R anythingllm:anythingllm /app/collector/hotdir && \
+    chown -R anythingllm:anythingllm /app/collector/outputs
+
+# Create startup script with proper environment variables
+RUN cat > /app/start-services.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Starting AnythingLLM unified container..."
+
+# Set environment variables
+export STORAGE_DIR="/app/server/storage"
+export NODE_ENV="production"
+export USE_SQLITE="true"
+
+# Initialize Django database
+echo "Initializing Django database..."
+cd /app/prechat_widget
+rm -f db.sqlite3
+rm -rf prechat/migrations/__pycache__
+python3 manage.py migrate --fake-initial --noinput
+python3 manage.py collectstatic --noinput
+
+# Start services
+echo "Starting all services..."
+
+# Start server
+cd /app/server
+STORAGE_DIR="/app/server/storage" node index.js &
+SERVER_PID=$!
+echo "Server started with PID: $SERVER_PID"
+
+# Start collector
+cd /app/collector
+STORAGE_DIR="/app/server/storage" node index.js &
+COLLECTOR_PID=$!
+echo "Collector started with PID: $COLLECTOR_PID"
+
+# Start prechat widget
+cd /app/prechat_widget
+python3 manage.py runserver 0.0.0.0:9000 &
+DJANGO_PID=$!
+echo "Django started with PID: $DJANGO_PID"
+
+echo "All services started successfully!"
+echo "Server: http://localhost:3001"
+echo "Collector: http://localhost:8888"
+echo "Prechat: http://localhost:9000"
+
+# Wait for any process to exit
+wait -n
+
+# Exit with status of process that exited first
+exit $?
+EOF
+
+RUN chmod +x /app/start-services.sh && \
+    chown anythingllm:anythingllm /app/start-services.sh
+
+# Switch to non-root user
+USER anythingllm
+
+# Expose ports
+EXPOSE 3001 8888 9000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3001/api/ping || exit 1
+
+# Start services
+CMD ["/app/start-services.sh"]

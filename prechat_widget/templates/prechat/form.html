@@ -6,256 +6,312 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Chat Form</title>
     <style>
-        * {
+        /* Scoped styles to prevent conflicts with other widgets */
+        .belltpo-prechat-container * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .belltpo-prechat-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 999999;
         }
-        
-        .form-container {
-            background: white;
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+
+        .belltpo-prechat-container .chat-widget {
             width: 100%;
             max-width: 400px;
+            height: 100vh;
+            max-height: 600px;
+            background: rgba(26, 26, 26, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-        
-        .form-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        
-        .form-header .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 16px auto;
-            display: block;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .form-header h2 {
-            color: #333;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .form-header p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: #333;
-            font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            background: white;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .submit-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .submit-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            color: #666;
-            margin-top: 16px;
-        }
-        
-        .close-btn {
+
+        .belltpo-prechat-container .close-btn {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #f5f5f5;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
             border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            color: #666;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .belltpo-prechat-container .close-btn:hover {
+            background: #fff;
+            color: #ff4444;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .belltpo-prechat-container .header {
+            background: linear-gradient(135deg, #00bfff 0%, #0099cc 100%);
+            padding: 16px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .belltpo-prechat-container .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .belltpo-prechat-container .logo {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .belltpo-prechat-container .brand-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .belltpo-prechat-container .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .belltpo-prechat-container .form-container {
+            padding: 32px 24px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .belltpo-prechat-container .form-description {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .belltpo-prechat-container .form-group {
+            margin-bottom: 20px;
+        }
+
+        .belltpo-prechat-container .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .belltpo-prechat-container .form-input {
+            width: 100%;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0 16px;
+            color: #fff;
+            font-size: 14px;
             transition: all 0.2s ease;
         }
-        
-        .close-btn:hover {
-            background: #e0e0e0;
-            color: #333;
+
+        .belltpo-prechat-container .form-input:focus {
+            outline: none;
+            border-color: #00bfff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
         }
-        
-        .form-container {
-            position: relative;
+
+        .belltpo-prechat-container .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .belltpo-prechat-container .mobile-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .belltpo-prechat-container .country-code {
+            flex: 0 0 120px;
+        }
+
+        .belltpo-prechat-container .mobile-input {
+            flex: 1;
+        }
+
+        .belltpo-prechat-container select.form-input {
+            cursor: pointer;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23ffffff" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 40px;
+        }
+
+        .belltpo-prechat-container .submit-btn {
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(135deg, #00bfff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .belltpo-prechat-container .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+        }
+
+        .belltpo-prechat-container .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .belltpo-prechat-container .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .belltpo-prechat-container .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        /* Scrollbar Styling */
+        .form-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .form-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .form-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
+            .chat-widget {
+                border-radius: 0;
+                height: 100vh;
+                max-height: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="form-container">
+    <div class="belltpo-prechat-container">
+        <div class="chat-widget">
         <button class="close-btn" id="closeBtn" title="Close">×</button>
-        <div class="form-header">
-            <img src="{% static 'images/belltpo_logo.jpg' %}" alt="BellTPO Logo" class="logo">
-            <h2>BellTPO Chat Assistant</h2>
-            <p>Please fill out this form to start chatting</p>
+        
+        <div class="header">
+            <div class="logo-container">
+                <img src="{% static 'images/belltpo_logo.jpg' %}" alt="BellTPO Logo" class="logo">
+                <div class="brand-title">BellTPO Chat</div>
+            </div>
+            <div class="subtitle">AI-Powered Support Assistant</div>
         </div>
         
-        <form id="prechatForm">
-            <div class="form-group">
-                <label for="name">Full Name *</label>
-                <input type="text" id="name" name="name" required>
+        <div class="form-container">
+            <div class="welcome-message">
+                Please provide your details to start a personalized chat session
             </div>
             
-            <div class="form-group">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="mobile">Mobile Number *</label>
-                <input type="tel" id="mobile" name="mobile" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="region">Region *</label>
-                <select id="region" name="region" required>
-                    <option value="">Select your region</option>
-                    <option value="North America">North America</option>
-                    <option value="Europe">Europe</option>
-                    <option value="Asia Pacific">India</option>
-                    <option value="Middle East">Middle East</option>
-                    <option value="Africa">Africa</option>
-                    <option value="South America">South America</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="submit-btn" id="submitBtn">
-                Start Chat
-            </button>
-            
-            <div class="loading" id="loading">
-                Processing your request...
-            </div>
-        </form>
+            <form id="prechatForm">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-input" required autocomplete="off" placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" required autocomplete="off" placeholder="Enter your email address">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <div class="mobile-group">
+                        <div class="country-code">
+                            <select class="form-select" id="countryCode" autocomplete="off">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="mobile-number">
+                            <input type="tel" id="mobile" name="mobile" class="form-input" required autocomplete="off" placeholder="Mobile number">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <select id="region" name="region" class="form-select" required autocomplete="off">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Start Chat Session
+                </button>
+                
+                <div class="loading" id="loading" style="display: none;">
+                    Processing your request...
+                </div>
+            </form>
+        </div>
+    </div>
     </div>
 
-    <script>
-        // Close button functionality
-        document.getElementById('closeBtn').addEventListener('click', function() {
-            // Send close message to parent window (embed widget)
-            window.parent.postMessage({
-                type: 'CLOSE_CHAT_WIDGET'
-            }, '*');
-        });
-
-        document.getElementById('prechatForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const loading = document.getElementById('loading');
-            
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Processing...';
-            loading.style.display = 'block';
-            
-            // Get form data
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                mobile: document.getElementById('mobile').value,
-                region: document.getElementById('region').value
-            };
-            
-            try {
-                // Submit to Django backend
-                const response = await fetch('/submit/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Send message to parent window (embed widget)
-                    window.parent.postMessage({
-                        type: 'DJANGO_FORM_SUCCESS',
-                        userData: result.user_data
-                    }, '*');
-                } else {
-                    alert('Error: ' + result.message);
-                    // Reset form
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Start Chat';
-                    loading.style.display = 'none';
-                }
-                
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                alert('An error occurred. Please try again.');
-                
-                // Reset form
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Start Chat';
-                loading.style.display = 'none';
-            }
-        });
-    </script>
+    <!-- Load separate JavaScript file -->
+    <script src="{% static 'js/prechat-form.js' %}"></script>
 </body>
 </html>
