@@ -1,0 +1,124 @@
+# Simple Dockerfile for AnythingLLM - Single Container Deployment
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    curl \
+    bash \
+    supervisor
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY server/package*.json ./server/
+COPY collector/package*.json ./collector/
+COPY frontend/package*.json ./frontend/
+COPY embed/package*.json ./embed/
+
+# Install dependencies for each service separately
+RUN cd server && npm install --production --no-optional
+RUN cd collector && npm install --production --no-optional
+RUN cd frontend && npm install --no-optional
+RUN cd embed && npm install --no-optional
+
+# Copy source code
+COPY server/ ./server/
+COPY collector/ ./collector/
+COPY frontend/ ./frontend/
+COPY embed/ ./embed/
+
+# Build frontend and embed
+RUN cd frontend && npm run build
+RUN cd embed && npm run build
+
+# Create app user
+RUN addgroup -g 1001 -S anythingllm && \
+    adduser -S anythingllm -u 1001
+
+# Create necessary directories
+RUN mkdir -p /app/server/storage/documents/custom-documents && \
+    mkdir -p /app/collector/hotdir && \
+    mkdir -p /app/server/storage/vector-cache && \
+    mkdir -p /app/server/storage/direct-uploads && \
+    mkdir -p /app/server/storage/logs && \
+    chown -R anythingllm:anythingllm /app
+
+# Setup Prisma
+WORKDIR /app/server
+RUN npx prisma generate
+
+# Create supervisor configuration
+RUN echo '[supervisord]' > /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'logfile=/var/log/supervisor/supervisord.log' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'pidfile=/var/run/supervisord.pid' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo '' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo '[program:anythingllm-server]' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'command=node index.js' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'directory=/app/server' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'user=anythingllm' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/server.err.log' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/server.out.log' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'environment=NODE_ENV=production,STORAGE_DIR=/app/server/storage' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo '' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo '[program:anythingllm-collector]' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'command=node working-collector-final.js' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'directory=/app/collector' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'user=anythingllm' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/collector.err.log' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/collector.out.log' >> /etc/supervisor/conf.d/anythingllm.conf && \
+    echo 'environment=NODE_ENV=production,STORAGE_DIR=/app/server/storage,COLLECTOR_PORT=8888' >> /etc/supervisor/conf.d/anythingllm.conf
+
+# Create entrypoint script
+RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
+    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Initialize database if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f "/app/server/storage/anythingllm.db" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Initializing database..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    cd /app/server' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    npx prisma migrate deploy' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    npx prisma db seed' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Start supervisor' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'exec /usr/bin/supervisord -c /etc/supervisor/conf.d/anythingllm.conf' >> /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Switch to app user
+USER anythingllm
+
+# Expose ports
+EXPOSE 3001 8888
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV STORAGE_DIR=/app/server/storage
+ENV COLLECTOR_PORT=8888
+ENV SERVER_PORT=3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3001/api/ping || exit 1
+
+WORKDIR /app
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

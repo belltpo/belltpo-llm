@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  anythingllm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anythingllm
+    restart: unless-stopped
+    ports:
+      - "3001:3001"  # Server port
+      - "8888:8888"  # Collector port
+    volumes:
+      - anythingllm_storage:/app/server/storage
+      - anythingllm_logs:/var/log/supervisor
+    environment:
+      - NODE_ENV=production
+      - STORAGE_DIR=/app/server/storage
+      - COLLECTOR_PORT=8888
+      - SERVER_PORT=3001
+      # Database
+      - DATABASE_CONNECTION_STRING=file:/app/server/storage/anythingllm.db
+      # JWT
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-here}
+      # Encryption
+      - INNGEST_SIGNING_KEY=${INNGEST_SIGNING_KEY:-your-inngest-key-here}
+      # LLM Provider (OpenAI example)
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - OPEN_AI_KEY=${OPEN_AI_KEY:-}
+      # Embedding Provider
+      - EMBEDDING_ENGINE=${EMBEDDING_ENGINE:-openai}
+      - EMBEDDING_MODEL_PREF=${EMBEDDING_MODEL_PREF:-text-embedding-ada-002}
+      # Vector Database
+      - VECTOR_DB=${VECTOR_DB:-lancedb}
+      # Whisper (Speech-to-Text)
+      - WHISPER_PROVIDER=${WHISPER_PROVIDER:-local}
+      # TTS Provider
+      - TTS_PROVIDER=${TTS_PROVIDER:-native}
+      # Authentication
+      - AUTH_TOKEN=${AUTH_TOKEN:-}
+      - DISABLE_TELEMETRY=${DISABLE_TELEMETRY:-true}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - anythingllm_network
+
+volumes:
+  anythingllm_storage:
+    driver: local
+  anythingllm_logs:
+    driver: local
+
+networks:
+  anythingllm_network:
+    driver: bridge

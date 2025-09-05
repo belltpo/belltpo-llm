@@ -11,8 +11,11 @@ import { AuthContext } from "@/AuthContext";
 //   };
 // }
 
-export default function useUser() {
+function useUser() {
   const context = useContext(AuthContext);
 
   return { ...context.store };
 }
+
+export { useUser };
+export default useUser;

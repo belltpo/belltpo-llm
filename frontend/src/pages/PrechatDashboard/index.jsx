@@ -12,7 +12,7 @@ import {
   MagnifyingGlass as Search,
   ArrowClockwise as RefreshCw,
   ChartBar as BarChart3,
-  TrendingUp
+  TrendUp as TrendingUp
 } from "@phosphor-icons/react";
 import Sidebar from "@/components/Sidebar";
 import { useUser } from "@/hooks/useUser";

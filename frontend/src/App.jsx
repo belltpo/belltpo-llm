@@ -30,7 +30,7 @@ const AdminLogs = lazy(() => import("@/pages/Admin/Logging"));
 const AdminAgents = lazy(() => import("@/pages/Admin/Agents"));
 const GeneralSettings = lazy(() => import("@/pages/GeneralSettings"));
 const TranscriptionSettings = lazy(() =>
-  import("@/pages/GeneralSettings/TranscriptionSettings")
+  import("@/pages/GeneralSettings/TranscriptionPreference")
 );
 const ChatDashboard = lazy(() => import("@/pages/ChatDashboard"));
 const InterfaceSettings = lazy(
