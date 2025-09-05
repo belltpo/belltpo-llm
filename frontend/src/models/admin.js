@@ -246,6 +246,66 @@ const Admin = {
         return false;
       });
   },
+
+  // Prechat Management
+  prechat: {
+    getSubmissions: async (queryParams = "") => {
+      return await fetch(`${API_BASE}/prechat/submissions?${queryParams}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, submissions: [], error: e.message };
+        });
+    },
+    getStats: async () => {
+      return await fetch(`${API_BASE}/prechat/stats`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, stats: {}, error: e.message };
+        });
+    },
+    getSubmission: async (uuid) => {
+      return await fetch(`${API_BASE}/prechat/submission/${uuid}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, submission: null, error: e.message };
+        });
+    },
+    updateStatus: async (uuid, status) => {
+      return await fetch(`${API_BASE}/prechat/submission/${uuid}/status`, {
+        method: "PUT",
+        headers: baseHeaders(),
+        body: JSON.stringify({ status }),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, error: e.message };
+        });
+    },
+    deleteSubmission: async (uuid) => {
+      return await fetch(`${API_BASE}/prechat/submission/${uuid}`, {
+        method: "DELETE",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, error: e.message };
+        });
+    },
+  },
 };
 
 export default Admin;

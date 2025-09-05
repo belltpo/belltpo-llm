@@ -31,6 +31,7 @@ const { mcpServersEndpoints } = require("./endpoints/mcpServers");
 const { mobileEndpoints } = require("./endpoints/mobile");
 const { chatDashboardEndpoints } = require("./endpoints/chatDashboard");
 const { websocketDashboardEndpoints } = require("./endpoints/websocketDashboard");
+const { officeHoursEndpoints } = require("./endpoints/api/office-hours");
 const app = express();
 const apiRouter = express.Router();
 const FILE_LIMIT = "3GB";
@@ -70,6 +71,7 @@ agentFlowEndpoints(apiRouter);
 mcpServersEndpoints(apiRouter);
 mobileEndpoints(apiRouter);
 chatDashboardEndpoints(app);
+officeHoursEndpoints(app);
 
 // WebSocket endpoints for real-time dashboard updates
 websocketDashboardEndpoints(app);

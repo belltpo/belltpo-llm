@@ -63,6 +63,7 @@ async function validateTablePragmas(force = false) {
     const { Invite } = require("../../models/invite");
     const { WelcomeMessages } = require("../../models/welcomeMessages");
     const { ApiKey } = require("../../models/apiKeys");
+    const { PrechatSubmissions } = require("../../models/prechatSubmissions");
 
     await SystemSettings.migrateTable();
     await User.migrateTable();
@@ -74,6 +75,7 @@ async function validateTablePragmas(force = false) {
     await Invite.migrateTable();
     await WelcomeMessages.migrateTable();
     await ApiKey.migrateTable();
+    await PrechatSubmissions.migrateTable();
   } catch (e) {
     console.error(`validateTablePragmas: Migrations failed`, e);
   }

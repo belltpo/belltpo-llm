@@ -103,6 +103,10 @@ const GeneralChats = lazy(
 const UserDashboard = lazy(
   () => import("@/pages/GeneralSettings/UserDashboard")
 );
+const PrechatDashboard = lazy(() => import("@/pages/PrechatDashboard"));
+const OfficeHours = lazy(
+  () => import("@/pages/GeneralSettings/OfficeHours")
+);
 
 export default function App() {
   return (
@@ -296,6 +300,14 @@ export default function App() {
                   <Route
                     path="/settings/mobile-connections"
                     element={<ManagerRoute Component={MobileConnections} />}
+                  />
+                  <Route
+                    path="/settings/office-hours"
+                    element={<AdminRoute Component={OfficeHours} />}
+                  />
+                  <Route
+                    path="/dashboard/prechat-submissions"
+                    element={<AdminRoute Component={PrechatDashboard} />}
                   />
                 </Routes>
                 <ToastContainer />

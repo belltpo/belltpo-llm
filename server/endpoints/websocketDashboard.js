@@ -1,5 +1,6 @@
 const { EmbedChats } = require("../models/embedChats");
 const { EmbedConfig } = require("../models/embedConfig");
+const { PrechatSubmissions } = require("../models/prechatSubmissions");
 const path = require('path');
 
 // Try to load sqlite3, fallback gracefully if not available
@@ -38,6 +39,12 @@ function websocketDashboardEndpoints(app) {
             break;
           case 'GET_STATS':
             await sendStatsUpdate(ws, data.embedId);
+            break;
+          case 'GET_PRECHAT_SUBMISSIONS':
+            await sendPrechatSubmissionsUpdate(ws);
+            break;
+          case 'GET_PRECHAT_STATS':
+            await sendPrechatStatsUpdate(ws);
             break;
           default:
             console.log('Unknown WebSocket message type:', data.type);
@@ -127,17 +134,53 @@ async function sendStatsUpdate(ws, embedId = null) {
   }
 }
 
+// Send prechat submissions update to a specific WebSocket connection
+async function sendPrechatSubmissionsUpdate(ws) {
+  try {
+    const submissions = await PrechatSubmissions.all();
+    ws.send(JSON.stringify({
+      type: 'PRECHAT_SUBMISSIONS_UPDATE',
+      data: { submissions }
+    }));
+  } catch (error) {
+    console.error('Error sending prechat submissions update:', error);
+    ws.send(JSON.stringify({ type: 'ERROR', message: error.message }));
+  }
+}
+
+// Send prechat stats update to a specific WebSocket connection
+async function sendPrechatStatsUpdate(ws) {
+  try {
+    const stats = await PrechatSubmissions.getStats();
+    ws.send(JSON.stringify({
+      type: 'PRECHAT_STATS_UPDATE',
+      data: stats
+    }));
+  } catch (error) {
+    console.error('Error sending prechat stats update:', error);
+    ws.send(JSON.stringify({ type: 'ERROR', message: error.message }));
+  }
+}
+
 // Send initial dashboard data
 async function sendDashboardUpdate(ws) {
   try {
-    const [sessions, stats] = await Promise.all([
+    const [sessions, stats, prechatSubmissions, prechatStats] = await Promise.all([
       getDashboardSessions(),
-      getDashboardStats()
+      getDashboardStats(),
+      PrechatSubmissions.all(),
+      PrechatSubmissions.getStats()
     ]);
 
     ws.send(JSON.stringify({
       type: 'DASHBOARD_INIT',
-      data: { sessions: sessions.sessions, total: sessions.total, stats }
+      data: { 
+        sessions: sessions.sessions, 
+        total: sessions.total, 
+        stats,
+        prechatSubmissions,
+        prechatStats
+      }
     }));
   } catch (error) {
     console.error('Error sending dashboard update:', error);
@@ -399,8 +442,17 @@ function getSessionStatus(lastActivity) {
   return "offline";
 }
 
+// Broadcast new prechat submission to dashboard
+function broadcastNewPrechatSubmission(submissionData) {
+  broadcastToDashboard({
+    type: 'NEW_PRECHAT_SUBMISSION',
+    data: submissionData
+  });
+}
+
 module.exports = { 
   websocketDashboardEndpoints, 
   broadcastToDashboard, 
-  broadcastNewChatMessage 
+  broadcastNewChatMessage,
+  broadcastNewPrechatSubmission
 };

@@ -281,11 +281,10 @@ const SidebarOptions = ({ user = null, t }) => (
               roles: ["admin", "manager"],
             },
             {
-              hidden: !canViewChatHistory,
-              btnText: "User Dashboard",
-              href: paths.settings.userDashboard(),
+              btnText: "Office Hours Settings",
+              href: paths.settings.officeHours(),
               flex: true,
-              roles: ["admin", "manager"],
+              roles: ["admin"],
             },
             {
               btnText: t("settings.invites"),

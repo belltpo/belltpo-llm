@@ -33,6 +33,7 @@ const SystemSettings = {
     "feature_flags",
     "meta_page_title",
     "meta_page_favicon",
+    "office_hours",
   ],
   supportedFields: [
     "logo_filename",
@@ -51,6 +52,9 @@ const SystemSettings = {
     // Meta page customization
     "meta_page_title",
     "meta_page_favicon",
+
+    // Office hours configuration
+    "office_hours",
 
     // beta feature flags
     "experimental_live_file_sync",

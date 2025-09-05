@@ -878,6 +878,61 @@ const System = {
           return { embeds: [] };
         });
     },
+
+    // Prechat submissions methods
+    getPrechatSubmissions: async (params = {}) => {
+      const searchParams = new URLSearchParams();
+      Object.keys(params).forEach(key => {
+        if (params[key]) searchParams.append(key, params[key]);
+      });
+      
+      return await fetch(`${API_BASE}/prechat/submissions?${searchParams}`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { submissions: [], pagination: {} };
+        });
+    },
+
+    getPrechatStats: async () => {
+      return await fetch(`${API_BASE}/prechat/stats`, {
+        method: "GET",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { total: 0, today: 0, thisMonth: 0 };
+        });
+    },
+
+    updatePrechatStatus: async (uuid, status) => {
+      return await fetch(`${API_BASE}/prechat/submission/${uuid}/status`, {
+        method: "PUT",
+        headers: baseHeaders(),
+        body: JSON.stringify({ status }),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, error: e.message };
+        });
+    },
+
+    deletePrechatSubmission: async (uuid) => {
+      return await fetch(`${API_BASE}/prechat/submission/${uuid}`, {
+        method: "DELETE",
+        headers: baseHeaders(),
+      })
+        .then((res) => res.json())
+        .catch((e) => {
+          console.error(e);
+          return { success: false, error: e.message };
+        });
+    },
   },
 };
 

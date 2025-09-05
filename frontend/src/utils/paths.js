@@ -170,6 +170,9 @@ export default {
     mobileConnections: () => {
       return `/settings/mobile-connections`;
     },
+    officeHours: () => {
+      return `/settings/office-hours`;
+    },
   },
   agents: {
     builder: () => {

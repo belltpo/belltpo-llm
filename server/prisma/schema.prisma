@@ -392,4 +392,22 @@ model workspace_parsed_files {
   @@index([userId])
 }
 
+model prechat_submissions {
+  id            Int      @id @default(autoincrement())
+  uuid          String   @unique
+  name          String
+  email         String
+  mobile        String
+  country_code  String?
+  region        String
+  message       String?
+  workspace_id  Int?
+  session_id    String?
+  ip_address    String?
+  user_agent    String?
+  status        String   @default("submitted")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 
