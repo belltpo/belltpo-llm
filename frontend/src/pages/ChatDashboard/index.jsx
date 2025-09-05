@@ -290,40 +290,25 @@ export default function ChatDashboard() {
               <ChatCircle size={16} className="inline mr-2" />
               Chat Sessions
             </button>
-            <button
-              onClick={() => {
-                setActiveTab("prechat-submissions");
-                fetchPrechatData();
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === "prechat-submissions"
-                  ? "bg-theme-sidebar-footer-icon text-white"
-                  : "text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-primary"
-              }`}
-            >
-              <Users size={16} className="inline mr-2" />
-              Prechat Submissions
-            </button>
           </div>
         </div>
 
-        {activeTab === "chat-sessions" ? (
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sessions List */}
-            <div className="w-1/3 bg-theme-bg-secondary border-r border-theme-modal-border flex flex-col">
-              {/* Stats Cards */}
-              <div className="p-4 border-b border-theme-modal-border">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{sessions.length || 0}</div>
-                    <div className="text-sm text-blue-600 dark:text-blue-400">Today's Chats</div>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">{sessions.length || 0}</div>
-                    <div className="text-sm text-green-600 dark:text-green-400">Total Sessions</div>
-                  </div>
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sessions List */}
+          <div className="w-1/3 bg-theme-bg-secondary border-r border-theme-modal-border flex flex-col">
+            {/* Stats Cards */}
+            <div className="p-4 border-b border-theme-modal-border">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{sessions.length || 0}</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">Today's Chats</div>
+                </div>
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{sessions.length || 0}</div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Total Sessions</div>
                 </div>
               </div>
+            </div>
 
             {/* Search */}
             <div className="p-4 border-b border-theme-modal-border">
@@ -520,204 +505,6 @@ export default function ChatDashboard() {
             )}
           </div>
         </div>
-        ) : (
-          // Prechat Submissions Tab
-          <div className="flex-1 overflow-hidden">
-            {/* Prechat Stats */}
-            <div className="p-4 border-b border-theme-modal-border bg-theme-bg-secondary">
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{prechatStats.total || 0}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400">Total Submissions</div>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{prechatStats.today || 0}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400">Today</div>
-                </div>
-                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{prechatStats.week || 0}</div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400">This Week</div>
-                </div>
-                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{prechatStats.month || 0}</div>
-                  <div className="text-sm text-orange-600 dark:text-orange-400">This Month</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Prechat Filters */}
-            <div className="p-4 border-b border-theme-modal-border bg-theme-bg-secondary">
-              <div className="flex flex-wrap gap-4 items-center justify-between">
-                <div className="flex flex-wrap gap-4 items-center">
-                  <div className="relative">
-                    <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-text-secondary" />
-                    <input
-                      type="text"
-                      placeholder="Search by name or email..."
-                      value={prechatFilters.search}
-                      onChange={(e) => setPrechatFilters(prev => ({ ...prev, search: e.target.value }))}
-                      className="pl-10 pr-4 py-2 bg-theme-bg-primary border border-theme-modal-border rounded-lg text-theme-text-primary placeholder-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-theme-sidebar-footer-icon"
-                    />
-                  </div>
-                  
-                  <select
-                    value={prechatFilters.status}
-                    onChange={(e) => setPrechatFilters(prev => ({ ...prev, status: e.target.value }))}
-                    className="px-4 py-2 bg-theme-bg-primary border border-theme-modal-border rounded-lg text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-theme-sidebar-footer-icon"
-                  >
-                    <option value="">All Status</option>
-                    <option value="submitted">Submitted</option>
-                    <option value="contacted">Contacted</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                  
-                  <input
-                    type="date"
-                    value={prechatFilters.startDate}
-                    onChange={(e) => setPrechatFilters(prev => ({ ...prev, startDate: e.target.value }))}
-                    className="px-4 py-2 bg-theme-bg-primary border border-theme-modal-border rounded-lg text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-theme-sidebar-footer-icon"
-                  />
-                  
-                  <input
-                    type="date"
-                    value={prechatFilters.endDate}
-                    onChange={(e) => setPrechatFilters(prev => ({ ...prev, endDate: e.target.value }))}
-                    className="px-4 py-2 bg-theme-bg-primary border border-theme-modal-border rounded-lg text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-theme-sidebar-footer-icon"
-                  />
-                </div>
-                
-                <div className="flex gap-2">
-                  <button
-                    onClick={fetchPrechatData}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    <ArrowClockwise size={16} />
-                    Refresh
-                  </button>
-                  
-                  <button
-                    onClick={handlePrechatExport}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                  >
-                    <Download size={16} />
-                    Export CSV
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Prechat Submissions Table */}
-            <div className="flex-1 overflow-hidden bg-theme-bg-primary">
-              <div className="overflow-x-auto h-full">
-                <table className="w-full">
-                  <thead className="bg-theme-bg-secondary sticky top-0">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-theme-text-secondary uppercase tracking-wider">
-                        Contact Info
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-theme-text-secondary uppercase tracking-wider">
-                        Location
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-theme-text-secondary uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-theme-text-secondary uppercase tracking-wider">
-                        Submitted
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-theme-text-secondary uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-theme-modal-border">
-                    {loading ? (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-8 text-center text-theme-text-secondary">
-                          <div className="flex items-center justify-center">
-                            <ArrowClockwise className="animate-spin h-6 w-6 mr-2" />
-                            Loading submissions...
-                          </div>
-                        </td>
-                      </tr>
-                    ) : prechatSubmissions.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-8 text-center text-theme-text-secondary">
-                          No submissions found
-                        </td>
-                      </tr>
-                    ) : (
-                      prechatSubmissions.map((submission) => (
-                        <tr key={submission.uuid} className="hover:bg-theme-bg-secondary">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-theme-sidebar-footer-icon flex items-center justify-center">
-                                  <User className="h-5 w-5 text-white" />
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-theme-text-primary">{submission.name}</div>
-                                <div className="text-sm text-theme-text-secondary flex items-center">
-                                  <Envelope className="h-3 w-3 mr-1" />
-                                  {submission.email}
-                                </div>
-                                <div className="text-sm text-theme-text-secondary flex items-center">
-                                  <Phone className="h-3 w-3 mr-1" />
-                                  {submission.mobile}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center text-sm text-theme-text-primary">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              {submission.region}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <select
-                              value={submission.status}
-                              onChange={(e) => handlePrechatStatusUpdate(submission.uuid, e.target.value)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-theme-sidebar-footer-icon ${
-                                submission.status === 'submitted' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                submission.status === 'contacted' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                submission.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                              }`}
-                            >
-                              <option value="submitted">Submitted</option>
-                              <option value="contacted">Contacted</option>
-                              <option value="resolved">Resolved</option>
-                              <option value="archived">Archived</option>
-                            </select>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-theme-text-primary">
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              {moment(submission.created_at).format('MMM DD, YYYY [at] h:mm A')}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium">
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handlePrechatDelete(submission.uuid)}
-                                className="text-red-400 hover:text-red-300 transition-colors"
-                                title="Delete submission"
-                              >
-                                <Trash size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

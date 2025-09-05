@@ -1,0 +1,9 @@
+This is a test document to verify the document upload and visibility functionality in AnythingLLM.
+
+Content:
+- Testing document processing
+- Verifying storage integration
+- Checking frontend visibility
+
+Date: 2025-09-05
+Purpose: Integration testing

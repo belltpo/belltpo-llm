@@ -136,7 +136,7 @@ function workspaceEndpoints(app) {
           return;
         }
 
-        const { success, reason } =
+        const { success, reason, documents } =
           await Collector.processDocument(originalname);
         if (!success) {
           response.status(500).json({ success: false, error: reason }).end();
@@ -154,7 +154,7 @@ function workspaceEndpoints(app) {
           },
           response.locals?.user?.id
         );
-        response.status(200).json({ success: true, error: null });
+        response.status(200).json({ success: true, error: null, documents });
       } catch (e) {
         console.error(e.message, e);
         response.sendStatus(500).end();

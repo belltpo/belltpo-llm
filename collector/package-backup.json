@@ -1,0 +1,33 @@
+{
+  "name": "anything-llm-document-collector",
+  "version": "1.8.5",
+  "description": "Document collector server endpoints",
+  "main": "minimal-collector-fixed.js",
+  "author": "Timothy Carambat (Mintplex Labs)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.12.1"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon --ignore hotdir --ignore storage --trace-warnings minimal-collector-fixed.js",
+    "start": "cross-env NODE_ENV=production node minimal-collector-fixed.js",
+    "dev-original": "cross-env NODE_ENV=development nodemon --ignore hotdir --ignore storage --trace-warnings index.js",
+    "start-original": "cross-env NODE_ENV=production node index.js",
+    "lint": "yarn prettier --ignore-path ../.prettierignore --write ./processSingleFile ./processLink ./utils index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "js-tiktoken": "^1.0.8",
+    "mime": "^3.0.0",
+    "uuid": "^9.0.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^2.0.22",
+    "prettier": "^2.4.1"
+  }
+}

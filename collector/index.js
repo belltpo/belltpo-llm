@@ -174,15 +174,18 @@ app.all("*", function (_, response) {
 });
 
 app
-  .listen(8888, async () => {
+  .listen(8888, "0.0.0.0", async () => {
     await wipeCollectorStorage();
-    console.log(`Document processor app listening on port 8888`);
+    console.log(`✅ Document processor app listening on port 8888`);
+    console.log(`Server accessible at http://localhost:8888`);
   })
-  .on("error", function (_) {
-    process.once("SIGUSR2", function () {
-      process.kill(process.pid, "SIGUSR2");
-    });
-    process.on("SIGINT", function () {
-      process.kill(process.pid, "SIGINT");
-    });
+  .on("error", function (err) {
+    console.error("❌ Server startup error:", err);
+    process.exit(1);
   });
+
+// Graceful shutdown
+process.on("SIGINT", () => {
+  console.log("\n🛑 Shutting down collector service...");
+  process.exit(0);
+});
